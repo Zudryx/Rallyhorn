@@ -1,3 +1,5 @@
+<p align="center"><img src="media/logo.png" width="128" alt="Rallyhorn logo"></p>
+
 # Rallyhorn
 
 World buff timer for **WoW Forever**. Rallyhorn tracks Rend, Onyxia and other

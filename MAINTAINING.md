@@ -57,6 +57,18 @@ length were seen in WoW Forever, and say in its `note` what is still an
 estimate. Add a test with the real yell lines, like the Rend ones in
 `tests/run_tests.lua`.
 
+## Logo
+
+`media/logo.svg` is the original. Made from it:
+
+- `media/logo.png` (512 px) and `media/logo-400.png` (400 px, for CurseForge).
+- `media/social-preview.png` (1280×640): GitHub's link preview. GitHub has no
+  API for it, so upload it by hand under Settings > General > Social preview.
+- `Rallyhorn/Media/Icon.tga`: the in-game icon (minimap button and the game's
+  addon list). 64×64, uncompressed 32-bit with alpha, rows stored bottom-up
+  (the usual TGA layout). Check it in game after remaking it: a TGA written
+  with the wrong row order shows up upside down.
+
 ## When WoW Forever patches
 
 If the game's interface number changes, update `## Interface:` in

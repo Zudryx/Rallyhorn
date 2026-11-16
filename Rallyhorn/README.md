@@ -73,8 +73,8 @@ unverified.
 To move the window, drag its title or any row. Lock it with `/rhorn lock`.
 Settings are under **Esc → Options → AddOns → Rallyhorn**.
 
-Rallyhorn has its own **minimap button** (a dragon-head icon on the edge of the
-minimap). You don't need any other addon for it:
+Rallyhorn has its own **minimap button** (the Rallyhorn horn logo on the edge
+of the minimap). You don't need any other addon for it:
 
 - Left-click shows or hides the window.
 - Right-click opens the settings.
@@ -203,7 +203,7 @@ Run `/console scriptErrors 1` first so any Lua error shows up on screen.
 - [ ] The window shows rows for your faction: Onyxia head, Rend head
   (Orgrimmar for Horde, Stormwind for Alliance), Resist Fire and Songflower.
 - [ ] The settings page opens from Esc → Options → AddOns → Rallyhorn.
-- [ ] The dragon-head button on the minimap's edge works: left-click toggles
+- [ ] The horn-logo button on the minimap's edge works: left-click toggles
   the window, right-click opens the settings, and you can drag it around the
   minimap. `/rhorn minimap off` hides it and `/rhorn minimap on` brings it
   back. After a `/reload` it's still where you left it.
@@ -315,8 +315,10 @@ Run `/console scriptErrors 1` first so any Lua error shows up on screen.
 The name lives in one place: the folder and TOC name. To rename:
 
 1. Rename the folder and `Rallyhorn.toc` to the new name.
-2. In the TOC, update `## Title`, `## SavedVariables` (`<NewName>DB`) and the
-   three `AddonCompartmentFunc` lines (`<NewName>_OnAddonCompartment...`).
+2. In the TOC, update `## Title`, `## SavedVariables` (`<NewName>DB`), the
+   three `AddonCompartmentFunc` lines (`<NewName>_OnAddonCompartment...`) and
+   the folder name in `## IconTexture`. Make a new logo too: the Rallyhorn
+   logo can't be used for a renamed copy (see `NOTICE.md`).
 3. Optionally change the short slash command `/rhorn` in `Core.lua`.
 
 Saved settings, the main slash command, the sync prefix and the window frame
@@ -356,6 +358,8 @@ sync prefix, so renamed and old copies won't share timers.
   - New Alliance row: Rend head (Stormwind), for Might of Stormwind.
   - When Rallyhorn both heard the yell and saw your buff, the row now says
     *heard + your buff* instead of only *your buff*.
+  - Rallyhorn has its own logo, now on the minimap button and in the game's
+    addon list.
 - **0.1.1:** Rallyhorn now has its own minimap button. It's draggable and can
   be hidden with `/rhorn minimap off`, and it needs no other addon.
 - **0.1.0:** First test build.

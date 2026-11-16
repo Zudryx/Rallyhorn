@@ -12,7 +12,8 @@ ns.MinimapButton = MinimapButton
 
 MinimapButton.DEFAULT_ANGLE = 225 -- degrees, 0 = right of the minimap, counter-clockwise
 
-local ICON = "Interface\\Icons\\INV_Misc_Head_Dragon_01"
+-- Rallyhorn's own logo, in the addon folder (follows the folder name).
+local ICON = "Interface\\AddOns\\" .. ADDON_NAME .. "\\Media\\Icon"
 local atan2 = math.atan2 or math.atan
 
 local function offsetFor(angle)
@@ -99,7 +100,7 @@ function MinimapButton:Create()
     icon:SetTexture(ICON)
     icon:SetSize(17, 17)
     icon:SetPoint("TOPLEFT", 7, -6)
-    icon:SetTexCoord(0.05, 0.95, 0.05, 0.95)
+    icon:SetTexCoord(0, 1, 0, 1)
 
     local border = button:CreateTexture(nil, "OVERLAY")
     border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")

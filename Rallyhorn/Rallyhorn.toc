@@ -5,7 +5,7 @@
 ## Version: 0.1.2
 ## X-License: GPL-3.0-or-later
 ## SavedVariables: RallyhornDB
-## IconTexture: Interface\Icons\INV_Misc_Head_Dragon_01
+## IconTexture: Interface\AddOns\Rallyhorn\Media\Icon
 ## AddonCompartmentFunc: Rallyhorn_OnAddonCompartmentClick
 ## AddonCompartmentFuncOnEnter: Rallyhorn_OnAddonCompartmentEnter
 ## AddonCompartmentFuncOnLeave: Rallyhorn_OnAddonCompartmentLeave
