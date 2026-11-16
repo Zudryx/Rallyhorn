@@ -1,0 +1,9 @@
+# WoW reads these fine either way; keep them consistent
+*.lua text eol=lf
+*.toc text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+# images
+*.tga binary
+*.png binary

@@ -1,0 +1,9 @@
+*.zip
+notes.md
+test-notes.md
+__pycache__/
+# Saved data from the game can hold other players' names (sync reports,
+# capture logs). Never commit it.
+WTF/
+SavedVariables/
+*.lua.bak

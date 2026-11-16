@@ -1,0 +1,23 @@
+## Interface: 16001
+## Title: Rallyhorn
+## Notes: World buff drop timers for WoW Forever, shared with your guild and group.
+## Author: Zudryx
+## Version: 0.1.1
+## X-License: GPL-3.0-or-later
+## SavedVariables: RallyhornDB
+## IconTexture: Interface\Icons\INV_Misc_Head_Dragon_01
+## AddonCompartmentFunc: Rallyhorn_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: Rallyhorn_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: Rallyhorn_OnAddonCompartmentLeave
+
+Core.lua
+Matcher.lua
+Data.lua
+Engine.lua
+Sync.lua
+Capture.lua
+Detect.lua
+UI.lua
+Options.lua
+MinimapButton.lua
+Slash.lua

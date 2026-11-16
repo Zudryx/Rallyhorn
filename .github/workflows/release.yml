@@ -1,0 +1,147 @@
+name: Release
+
+# Push to "testing": run the tests and publish a GitHub pre-release
+# vX.Y.Z-test.N (a test build) for the owner to try. It is NOT sent to
+# CurseForge. Only the newest test build is kept.
+#
+# Push to "main" (merging testing once the owner has tested it): run the
+# tests, and if the version in Rallyhorn.toc hasn't been released yet, publish
+# GitHub release vX.Y.Z, upload the same zip to CurseForge (once the project
+# is set up, see MAINTAINING.md) and remove that version's test builds.
+#
+# Run it by hand to check the CurseForge token (nothing is uploaded) or to
+# send the current version to CurseForge again after a failed upload.
+
+on:
+  push:
+    branches: [main, testing]
+  workflow_dispatch:
+    inputs:
+      curseforge:
+        description: "CurseForge: check = test the token and game version, nothing uploaded; upload = send the current version again"
+        type: choice
+        options: [nothing, check, upload]
+        default: nothing
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Lua
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Tests
+        run: |
+          lua5.3 tests/run_tests.lua
+          python3 tests/lint51.py Rallyhorn
+
+      - name: Read version
+        id: v
+        run: |
+          VERSION=$(grep -m1 '^## Version:' Rallyhorn/Rallyhorn.toc | sed 's/## Version:[[:space:]]*//' | tr -d '\r[:space:]')
+          CORE=$(grep -m1 'readMetadata("Version") or "' Rallyhorn/Core.lua | sed 's/.*or "\([^"]*\)".*/\1/')
+          if [ "$VERSION" != "$CORE" ]; then
+            echo "::error::Rallyhorn.toc says $VERSION but the fallback in Core.lua says $CORE. Bump both."
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Package
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          # The addon folder already carries its README, LICENSE and NOTICE.md.
+          zip -r "Rallyhorn-$VERSION.zip" Rallyhorn -x "*.DS_Store"
+          # Release notes = this version's entry under "## Changes" in Rallyhorn/README.md.
+          awk -v v="$VERSION" '
+            /^## / { inchg = ($0 == "## Changes"); p = 0; next }
+            inchg && /^- \*\*/ {
+              p = (index($0, "- **" v ":**") == 1)
+              if (p) { sub(/^- \*\*[^*]*\*\*[[:space:]]*/, ""); if (length($0)) print }
+              next
+            }
+            inchg && p { sub(/^  /, ""); print }
+          ' Rallyhorn/README.md > notes.md
+          [ -s notes.md ] || echo "Rallyhorn $VERSION" > notes.md
+          cat notes.md
+
+      - name: Test build (testing branch)
+        if: github.ref_name == 'testing'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.v.outputs.version }}
+          N: ${{ github.run_number }}
+        run: |
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            # docs-only pushes after a release: nothing new to test
+            echo "::notice::v$VERSION is already released, so no test build. Bump the version to make the next one."
+            for t in $(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" -q '.[] | select(.prerelease) | .tag_name' | grep -- "^v$VERSION-test\." || true); do
+              gh release delete "$t" --cleanup-tag -y
+            done
+            exit 0
+          fi
+          TAG="v$VERSION-test.$N"
+          { echo "**Test build $N of Rallyhorn $VERSION.** Not on CurseForge yet."
+            echo "To try it: download the Rallyhorn zip below and replace the Rallyhorn folder in your AddOns folder."
+            echo
+            cat notes.md; } > test-notes.md
+          # keep only the newest test build
+          for t in $(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" -q '.[] | select(.prerelease) | .tag_name' | grep -- '-test\.' || true); do
+            gh release delete "$t" --cleanup-tag -y
+          done
+          gh release create "$TAG" "Rallyhorn-$VERSION.zip" --prerelease --target "$GITHUB_SHA" \
+            --title "Rallyhorn $VERSION (test $N)" --notes-file test-notes.md
+
+      - name: Publish release if this version is new
+        id: publish
+        if: github.ref_name == 'main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            echo "v$VERSION is already released - nothing to do."
+            exit 0
+          fi
+          gh release create "v$VERSION" "Rallyhorn-$VERSION.zip" --target "$GITHUB_SHA" \
+            --title "Rallyhorn $VERSION" --notes-file notes.md
+          echo "created=true" >> "$GITHUB_OUTPUT"
+          # this version's test builds have done their job
+          for t in $(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" -q '.[] | select(.prerelease) | .tag_name' | grep -- "^v$VERSION-test\." || true); do
+            gh release delete "$t" --cleanup-tag -y
+          done
+
+      - name: CurseForge
+        # CurseForge only ever gets main (tested and approved), never a test build
+        if: github.ref_name == 'main' && (steps.publish.outputs.created == 'true' || inputs.curseforge == 'upload' || inputs.curseforge == 'check')
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.v.outputs.version }}
+          MODE: ${{ (steps.publish.outputs.created == 'true' || inputs.curseforge == 'upload') && 'upload' || 'check' }}
+        run: |
+          if ! grep -q '^## X-Curse-Project-ID:' Rallyhorn/Rallyhorn.toc; then
+            if [ "$MODE" = check ]; then echo "::error::Rallyhorn.toc has no ## X-Curse-Project-ID line yet."; exit 1; fi
+            echo "::notice::Rallyhorn isn't set up on CurseForge yet (no X-Curse-Project-ID in Rallyhorn.toc), so nothing was sent there."
+            exit 0
+          fi
+          if [ -z "$CF_API_KEY" ]; then
+            if [ "$MODE" = check ]; then echo "::error::There's no CF_API_KEY secret."; exit 1; fi
+            echo "::notice::No CF_API_KEY secret, so nothing was sent to CurseForge."
+            exit 0
+          fi
+          if [ "$MODE" = check ]; then
+            python3 .github/scripts/curseforge_upload.py --toc Rallyhorn/Rallyhorn.toc \
+              --file "Rallyhorn-$VERSION.zip" --version "$VERSION" --changelog notes.md --dry-run
+            echo "::notice::CurseForge token works. Nothing was uploaded."
+            exit 0
+          fi
+          # same zip as the GitHub release
+          [ -f "Rallyhorn-$VERSION.zip" ] || gh release download "v$VERSION" -p "Rallyhorn-$VERSION.zip"
+          python3 .github/scripts/curseforge_upload.py --toc Rallyhorn/Rallyhorn.toc \
+            --file "Rallyhorn-$VERSION.zip" --version "$VERSION" --changelog notes.md

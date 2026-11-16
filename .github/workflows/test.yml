@@ -1,0 +1,19 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main, testing]   # main and testing are tested by the release workflow
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Addon tests (simulated WoW API)
+        run: lua5.3 tests/run_tests.lua
+      - name: Lua 5.1 check (what WoW runs)
+        run: python3 tests/lint51.py Rallyhorn
