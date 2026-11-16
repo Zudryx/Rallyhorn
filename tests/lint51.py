@@ -3,13 +3,19 @@
 
 The only Lua available here is LuaTeX's Lua 5.3, which accepts syntax that
 WoW's Lua 5.1 rejects. This strips comments/strings and flags 5.2+ features,
-then lists every global each file reads or writes (via texluac -l) and flags
+then lists every global each file reads or writes (via luac -l) and flags
 ones that are not known WoW API / Lua 5.1 names.
 """
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+# Any Lua 5.3/5.4 compiler can list globals: LuaTeX's here, plain luac on GitHub.
+LUAC = next((c for c in ("texluac", "luac5.3", "luac5.4", "luac") if shutil.which(c)), None)
+if LUAC is None:
+    sys.exit("lint51: no luac found (install lua5.3)")
 
 ADDON = Path(sys.argv[1])
 
@@ -97,7 +103,7 @@ for path in sorted(ADDON.glob("*.lua")):
         if re.search(r"%d", line) and "string.format" in line and "math.floor" not in line:
             pass  # format checks are covered by tests
 
-    listing = subprocess.run(["texluac", "-l", "-p", str(path)], capture_output=True, text=True).stdout
+    listing = subprocess.run([LUAC, "-l", "-p", str(path)], capture_output=True, text=True).stdout
     names = set(re.findall(r"[GS]ETTABUP\s.*_ENV \"([^\"]+)\"", listing))
     globals_report[current] = names
     for name in sorted(names):
