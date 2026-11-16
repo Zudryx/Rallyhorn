@@ -32,7 +32,9 @@ local SOURCE_TEXT = {
 
 local function sourceLabel(record)
     local label = SOURCE_TEXT[record.source] or record.source or "?"
-    if record.source == "sync" and record.reporter then
+    if record.source == "aura" and record.heard then
+        label = "heard + your buff"
+    elseif record.source == "sync" and record.reporter then
         label = "via " .. record.reporter
     elseif record.source == "test" and record.reporter and not ns.IsSelf(record.reporter) then
         label = "test via " .. record.reporter
@@ -299,8 +301,13 @@ function UI:ShowTooltip(row)
         GameTooltip:SetOwner(row, "ANCHOR_LEFT")
         GameTooltip:AddLine(buff.name)
         GameTooltip:AddLine(buff.label .. " · " .. buff.faction .. " · " .. (buff.kind == "drop" and "world drop" or "personal"), 1, 1, 1)
-        GameTooltip:AddLine("Lasts " .. ns.FormatDuration(buff.duration) ..
-            (buff.cooldown and (" · can drop every " .. ns.FormatDuration(buff.cooldown)) or " · cooldown unknown"), 0.8, 0.8, 0.8)
+        local cooldownText
+        if buff.cooldown then
+            cooldownText = "can drop every " .. ns.FormatDuration(buff.cooldown)
+        else
+            cooldownText = buff.cooldownText or "cooldown unknown"
+        end
+        GameTooltip:AddLine("Lasts " .. ns.FormatDuration(buff.duration) .. " · " .. cooldownText, 0.8, 0.8, 0.8, true)
         if not buff.verified then
             GameTooltip:AddLine("* Unverified: Classic Era values until confirmed in WoW Forever.", 1, 0.6, 0.2, true)
         end

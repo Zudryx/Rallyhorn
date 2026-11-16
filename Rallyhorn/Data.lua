@@ -12,6 +12,8 @@
 --                "personal" = a buff you pick up yourself: tracked from your own auras, never shared
 --   duration     buff length in seconds (an observed aura duration overrides it per drop)
 --   cooldown     minimum seconds between two drops, or nil if unknown
+--   cooldownText optional: what the tooltip says instead of "cooldown unknown"
+--   dedupeWindow optional: reports this many seconds apart count as one drop (default 90)
 --   spellIds     aura spell IDs that mean "this buff"
 --   auraNames    aura names that mean "this buff" (fallback when spell IDs change)
 --   triggers     NPC chat lines that announce or apply the buff:
@@ -28,6 +30,8 @@
 --
 -- Every value marked verified = false comes from Classic Era and is a placeholder.
 -- Forever's raids open on Dec 9, 2026; use capture mode to collect the real values.
+-- verified = true means the NPC, the yell lines and the buff length were seen in
+-- WoW Forever; the note says what is still an estimate.
 
 local ADDON_NAME, ns = ...
 
@@ -74,14 +78,39 @@ ns.BUFFS = {
         kind = "drop",
         duration = 3600,
         cooldown = nil,
-        spellIds = { 16609 },
+        cooldownText = "no long cooldown (drops seen minutes apart)",
+        -- Heads can be turned in minutes apart, so keep separate drops apart.
+        dedupeWindow = 30,
+        -- 16609: Thrall's buff. 355366: the same buff cast by the Heralds of
+        -- Thrall in the Crossroads and Razor Hill.
+        spellIds = { 16609, 355366 },
         auraNames = { "Warchief's Blessing" },
         triggers = {
+            -- Confirmed in Forever (Nov 16, 2026): "...The false Warchief, Rend Blackhand, has fallen!"
             { npc = { "Thrall" }, all = { "rend blackhand" }, delay = 6, stage = "announce" },
+            -- Confirmed in Forever (Nov 16, 2026): "Be bathed in my power! Drink in my might! ..."
             { npc = { "Thrall" }, all = { "my might" }, delay = 0 },
         },
+        verified = true,
+        note = "Confirmed in WoW Forever on Nov 16, 2026: Thrall's two yells in Orgrimmar and the 1-hour buff. Drops were seen minutes apart. The buff also reaches the Crossroads and Razor Hill. The 6-second wait after the first yell is still an estimate.",
+    },
+    {
+        key = "rend_alliance",
+        name = "Might of Stormwind",
+        label = "Rend head (Stormwind)",
+        faction = "Alliance",
+        kind = "drop",
+        duration = 3600,
+        cooldown = nil,
+        dedupeWindow = 30,
+        -- Reported for Forever: 1304678 and 460940.
+        spellIds = { 1304678, 460940 },
+        auraNames = { "Might of Stormwind" },
+        -- The Stormwind yell has not been recorded yet, so this one is picked
+        -- up from your own buff only. Capture mode logs the yell for a patch.
+        triggers = {},
         verified = false,
-        note = "Rend Blackhand is in Upper Blackrock Spire. Yell keywords, delay and spell ID are Classic Era placeholders; cooldown unknown.",
+        note = "Forever's Alliance twin of Warchief's Blessing: Rend's head goes to Master Mathias Shaw in Stormwind (End of the Dark Horde). The buff reaches Stormwind, Goldshire, Lakeshire and Sentinel Hill. Picked up from your own buff until the yell is recorded.",
     },
     {
         key = "zandalar",

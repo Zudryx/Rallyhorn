@@ -5,10 +5,11 @@ drops (for example an Onyxia or Rend head turn-in), shows how long the buff
 lasts and when it can drop again, and shares those timers with your guild and
 group.
 
-Version 0.1.1 is a pre-release, built before Forever's raids open on
+Version 0.1.2 is a pre-release, built before Forever's raids open on
 **December 9, 2026**. The timer engine, sharing, window and test tools work
-now. The yell text and spell IDs for the real turn-ins can't be checked until
-someone kills Onyxia, so they are placeholders (see "Day-one checklist").
+now. The Horde Rend turn-in (Warchief's Blessing) was confirmed in game on
+November 16, 2026. The Onyxia yell text and spell IDs can't be checked until
+someone kills Onyxia, so they are still placeholders (see "Day-one checklist").
 
 Rallyhorn only shows information. It never casts, targets, moves, or clicks
 anything for you.
@@ -17,7 +18,10 @@ anything for you.
 
 ## Install
 
-1. Unzip `Rallyhorn-0.1.1.zip`. You get a folder called `Rallyhorn`.
+1. Download `Rallyhorn-x.y.z.zip` from the newest release on
+   <https://github.com/Zudryx/Rallyhorn/releases> (skip the ones marked
+   *Pre-release*: those are test builds). Unzip it. You get a folder called
+   `Rallyhorn`.
 2. Copy that folder into Forever's AddOns folder:
    `World of Warcraft\_forever_\Interface\AddOns\`
    (The beta used `_classic_beta_` instead of `_forever_`.) When you're done
@@ -61,7 +65,8 @@ A small window lists each world buff for your faction. Each row shows:
 
 The small grey line under each row says when the buff dropped and where that
 information came from: *heard* (you heard the yell), *your buff* (read from your
-own buff), *via Name Surname* (shared by another player) or *test*. Hover over
+own buff), *heard + your buff* (both), *via Name Surname* (shared by another
+player) or *test*. Hover over
 a row for details. A grey `*` after a buff's name means its values are still
 unverified.
 
@@ -112,8 +117,8 @@ appears in that list too, with the same clicks.
 | `/rhorn debug on` or `off` | Turn extra diagnostic output on or off |
 | `/rhorn version` | Show the addon, protocol and client versions |
 
-The buff keys are `ony_horde`, `ony_alliance`, `rend`, `zandalar`, `resist_fire`,
-`songflower` and `dmf_fortune`. When the stand-in is on, `battleshout` is added.
+The buff keys are `ony_horde`, `ony_alliance`, `rend`, `rend_alliance`,
+`zandalar`, `resist_fire`, `songflower` and `dmf_fortune`. When the stand-in is on, `battleshout` is added.
 
 ---
 
@@ -136,7 +141,8 @@ The buff keys are `ony_horde`, `ony_alliance`, `rend`, `zandalar`, `resist_fire`
     and never shared.
 - **Timer engine** (`Engine.lua`). Every report, real or fake, goes through
   `Engine:RecordDrop(key, time, source)`.
-  - Reports less than 90 seconds apart count as the same drop. When two
+  - Reports less than 90 seconds apart count as the same drop (30 seconds for
+    Rend, because players can turn heads in only minutes apart). When two
     reports clash, the more trustworthy source wins: your own buff, then the
     yell, then a shared report, then a test.
   - Reports more than 5 minutes in the future or more than a day old are
@@ -194,8 +200,8 @@ Run `/console scriptErrors 1` first so any Lua error shows up on screen.
 
 **1. It loads**
 - [ ] `/rhorn version` prints the addon version and client interface 16001.
-- [ ] The window shows rows for your faction: Onyxia head, Rend head (Horde
-  only), Resist Fire and Songflower.
+- [ ] The window shows rows for your faction: Onyxia head, Rend head
+  (Orgrimmar for Horde, Stormwind for Alliance), Resist Fire and Songflower.
 - [ ] The settings page opens from Esc → Options → AddOns → Rallyhorn.
 - [ ] The dragon-head button on the minimap's edge works: left-click toggles
   the window, right-click opens the settings, and you can drag it around the
@@ -279,19 +285,25 @@ Run `/console scriptErrors 1` first so any Lua error shows up on screen.
 5. **Check it.** `/rhorn testyell ony_horde` should match. If you have Lua
    installed, run the tests too (see Development).
 6. **Ship a patch.**
-   - Bump `## Version` in `Rallyhorn.toc`, zip the `Rallyhorn` folder, and
-     release it.
+   - Bump the version and push to the `testing` branch on GitHub. That makes
+     a test build to try in game; merging into `main` releases it (see
+     `MAINTAINING.md` in the repo).
    - Don't rename buff keys. Keys are what's shared between players, so
      keeping them lets old and new versions still share timers.
-7. **Do the same for Rend** when Upper Blackrock Spire's turn-in is seen, and
-   for any other world buff confirmed in Forever.
+7. **Do the same for the Alliance Rend buff** (Might of Stormwind, key
+   `rend_alliance`): an Alliance player with capture on in Stormwind records
+   the yell, and it goes into `triggers`. Horde Rend is already confirmed.
+   Do the same for any other world buff confirmed in Forever.
 
 ---
 
 ## Known limits
 
-- All buff values are Classic Era placeholders until confirmed. Rend's cooldown
-  is unknown, so it shows "Gone" rather than "Ready in".
+- Except Horde Rend, buff values are Classic Era placeholders until confirmed.
+- Rend has no long cooldown in Forever (drops were seen minutes apart), so its
+  row shows "Gone" rather than "Ready in" once the buff ends.
+- Might of Stormwind (Alliance Rend) is picked up from your own buff only,
+  until its yell is recorded.
 - NPC names and keywords are English, so the addon only detects drops on
   English (enUS) clients for now.
 - Forever reportedly applies world buffs in the open world only (not dungeons,
@@ -325,14 +337,25 @@ sync prefix, so renamed and old copies won't share timers.
   - `Options.lua`: the settings page and the game's addon list entry.
   - `MinimapButton.lua`: Rallyhorn's own minimap button.
   - `Slash.lua`: slash commands.
-- **Tests.** The tests and their WoW API stand-ins live outside the addon
-  folder, in `tests/` (see the dev zip). From the folder that contains
-  `Rallyhorn/`, run `lua5.1 tests/run_tests.lua`; Lua 5.3 works too.
-  `python3 tests/lint51.py Rallyhorn` flags code that WoW's Lua 5.1 would
-  reject, and any unexpected globals.
+- **Source and tests.** The code, tests and release process are on GitHub at
+  <https://github.com/Zudryx/Rallyhorn>. The tests and their WoW API
+  stand-ins live outside the addon folder, in `tests/`. From the top of the
+  repo, run `lua5.3 tests/run_tests.lua`. `python3 tests/lint51.py Rallyhorn`
+  flags code that WoW's Lua 5.1 would reject, and any unexpected globals.
+  GitHub runs both on every push.
 
 ## Changes
 
+- **0.1.2:**
+  - Horde Rend (Warchief's Blessing) is confirmed in Forever: Thrall's two
+    yells in Orgrimmar and the 1-hour buff. Its row no longer has the
+    unverified `*`, and the tooltip says it has no long cooldown.
+  - The buff cast by the Heralds of Thrall (the Crossroads and Razor Hill)
+    now counts as Rend too.
+  - Rend drops only a minute or two apart are now kept as separate drops.
+  - New Alliance row: Rend head (Stormwind), for Might of Stormwind.
+  - When Rallyhorn both heard the yell and saw your buff, the row now says
+    *heard + your buff* instead of only *your buff*.
 - **0.1.1:** Rallyhorn now has its own minimap button. It's draggable and can
   be hidden with `/rhorn minimap off`, and it needs no other addon.
 - **0.1.0:** First test build.

@@ -65,8 +65,10 @@ end)
 
 test("unverified values are flagged", function()
     local ns = boot()
+    -- Only buffs seen in WoW Forever may be marked verified.
+    local confirmed = { rend = true }
     for _, b in ipairs(ns.BUFFS) do
-        eq(b.verified, false, b.key .. ".verified")
+        eq(b.verified, confirmed[b.key] == true, b.key .. ".verified")
     end
 end)
 
@@ -195,6 +197,59 @@ test("verified cooldown blocks impossible shared drops", function()
     buff.verified = false
 end)
 
+test("Rend drops a minute and a half apart stay separate", function()
+    -- Seen in Forever on Nov 16, 2026: drops at 14:23:56 and 14:25:32 (96 s apart).
+    local ns = boot()
+    local E = ns.Engine
+    local now = ns.Now()
+    E:RecordDrop("rend", now - 96, "aura")
+    local ok, reason = E:RecordDrop("rend", now, "aura")
+    eq(reason, "new")
+    eq(E:GetRecord("rend").ts, now)
+    eq(ns.db.history.rend[1].ts, now - 96, "earlier drop kept in history")
+    -- reports of the same drop a few seconds apart are still one drop
+    ok, reason = E:RecordDrop("rend", now + 8, "yell")
+    eq(reason, "duplicate")
+end)
+
+test("a heard drop confirmed by your buff says both", function()
+    local ns = boot()
+    local E = ns.Engine
+    local now = ns.Now()
+    E:RecordDrop("rend", now + 6, "announce", "Thrall")
+    E:RecordDrop("rend", now + 1, "yell", "Thrall")
+    local ok, reason = E:RecordDrop("rend", now + 1, "aura")
+    eq(reason, "refined")
+    local rec = E:GetRecord("rend")
+    eq(rec.source, "aura")
+    eq(rec.heard, true)
+    local _, detail = ns.UI.StatusText(E:GetStatus("rend", now + 60))
+    truthy(detail:find("heard + your buff", 1, true), detail)
+end)
+
+test("a yell heard after your buff still marks the drop as heard", function()
+    local ns = boot()
+    local E = ns.Engine
+    local now = ns.Now()
+    E:RecordDrop("rend", now, "aura")
+    local _, detail = ns.UI.StatusText(E:GetStatus("rend", now + 1))
+    truthy(detail:find("(your buff)", 1, true), detail)
+    local ok, reason = E:RecordDrop("rend", now + 2, "yell", "Thrall")
+    eq(reason, "duplicate")
+    eq(E:GetRecord("rend").ts, now, "the buff's exact time is kept")
+    _, detail = ns.UI.StatusText(E:GetStatus("rend", now + 3))
+    truthy(detail:find("heard + your buff", 1, true), detail)
+end)
+
+test("a drop only seen on your buff is not marked heard", function()
+    local ns = boot()
+    local now = ns.Now()
+    ns.Engine:RecordDrop("rend", now, "aura")
+    eq(ns.Engine:GetRecord("rend").heard, nil)
+    ns.Engine:RecordDrop("rend", now, "sync")
+    eq(ns.Engine:GetRecord("rend").heard, nil, "a shared report is not hearing it")
+end)
+
 test("observed aura duration overrides the table", function()
     local ns = boot()
     local now = ns.Now()
@@ -222,6 +277,14 @@ test("matches NPC + fragments, picks the right stage", function()
     eq(keys(M.Match("  overlord runthak ", "Rallying-Cry!", nil, "YELL")), "ony_horde:drop")
     eq(keys(M.Match("Major Mattingly", "Onyxia is dead.", "Stormwind City", "YELL")), "ony_alliance:announce")
     eq(keys(M.Match("Thrall", "The false Warchief, Rend Blackhand, has fallen!", "Orgrimmar", "YELL")), "rend:announce")
+end)
+
+test("Thrall's real Forever yells match Rend", function()
+    -- Captured in Orgrimmar on Nov 16, 2026.
+    local ns = boot()
+    local M = ns.Matcher
+    eq(keys(M.Match("Thrall", "Honor your heroes! On this day, they have dealt a great blow against one of our most hated enemies! The false Warchief, Rend Blackhand, has fallen!", "Orgrimmar", "YELL")), "rend:announce")
+    eq(keys(M.Match("Thrall", "Be bathed in my power! Drink in my might! Battle for the glory of the Horde!", "Orgrimmar", "YELL")), "rend:drop")
 end)
 
 test("wrong NPC, wrong chat type or missing words do not match", function()
@@ -425,7 +488,7 @@ test("our own query echoed under a different name format is ignored", function()
     advance(3)
     eq(#SENT, 1)
     local mine = SENT[1].text
-    truthy(mine:match("^1:Q:0%.1%.1:%w+$"), "query format: " .. mine)
+    truthy(mine:match("^1:Q:%d+%.%d+%.%d+:%w+$"), "query format: " .. mine)
     fireEvent("CHAT_MSG_ADDON", "Rallyhorn", mine, "GUILD", "Aldric")
     advance(10)
     eq(#SENT, 1, "answered our own query")
@@ -720,6 +783,43 @@ test("personal buffs are tracked from auras even when not fresh", function()
     eq(#SENT, 0, "personal buff was shared")
 end)
 
+test("Alliance: Might of Stormwind is picked up from your buff", function()
+    local ns = boot({ fake = { faction = "Alliance" } })
+    FAKE.auras = { { spellId = 1304678, name = "Might of Stormwind", duration = 3600, expirationTime = FAKE.game + 3598 } }
+    fireEvent("UNIT_AURA", "player", {})
+    advance(1)
+    local rec = ns.Engine:GetRecord("rend_alliance")
+    truthy(rec, "no record")
+    eq(rec.source, "aura")
+    eq(ns.Engine:GetRecord("rend"), nil, "Horde entry touched")
+    eq(ns.Engine:GetStatus("rend_alliance").state, "active")
+end)
+
+test("Alliance: Might of Stormwind is matched by name when the spell ID is new", function()
+    local ns = boot({ fake = { faction = "Alliance" } })
+    FAKE.auras = { { spellId = 999998, name = "Might of Stormwind", duration = 3600, expirationTime = FAKE.game + 3599 } }
+    fireEvent("UNIT_AURA", "player", {})
+    advance(1)
+    truthy(ns.Engine:GetRecord("rend_alliance"), "no record")
+end)
+
+test("Alliance window lists the Alliance buffs", function()
+    local ns = boot({ fake = { faction = "Alliance" } })
+    local out = {}
+    for _, b in ipairs(ns.UI.visible) do
+        out[#out + 1] = b.key
+    end
+    eq(table.concat(out, ","), "ony_alliance,rend_alliance,resist_fire,songflower")
+end)
+
+test("Herald of Thrall's version of Warchief's Blessing counts as Rend", function()
+    local ns = boot()
+    FAKE.auras = { { spellId = 355366, name = "Warchief's Blessing", duration = 3600, expirationTime = FAKE.game + 3599 } }
+    fireEvent("UNIT_AURA", "player", {})
+    advance(1)
+    truthy(ns.Engine:GetRecord("rend"), "no record")
+end)
+
 ---------------------------------------------------------------------------
 print("Capture")
 ---------------------------------------------------------------------------
@@ -807,11 +907,12 @@ test("window only lists the player's faction unless asked", function()
     end
     eq(listed(), "ony_horde,rend,resist_fire,songflower")
     slash("faction all")
-    eq(listed(), "ony_horde,ony_alliance,rend,resist_fire,songflower")
+    eq(listed(), "ony_horde,ony_alliance,rend,rend_alliance,resist_fire,songflower")
     slash("buff zandalar show")
     truthy(listed():find("zandalar"))
     slash("buff rend hide")
-    falsy(listed():find("rend"))
+    falsy(("," .. listed() .. ","):find(",rend,", 1, true), "rend still listed")
+    truthy(("," .. listed() .. ","):find(",rend_alliance,", 1, true), "hid the wrong row")
 end)
 
 test("dragging saves the position; lock blocks dragging", function()
@@ -922,6 +1023,26 @@ test("tooltip renders for every row", function()
             truthy(#GameTooltip.lines > 2, "tooltip empty for " .. row.buff.key)
         end
     end
+end)
+
+test("Rend tooltip: confirmed, no long cooldown, heard + your buff", function()
+    local ns = boot()
+    local now = ns.Now()
+    ns.Engine:RecordDrop("rend", now, "yell", "Thrall")
+    ns.Engine:RecordDrop("rend", now, "aura", nil, { duration = 3600 })
+    local row
+    for _, r in ipairs(ns.UI.frame.rows) do
+        if r.buff and r.buff.key == "rend" then
+            row = r
+        end
+    end
+    truthy(row, "no Rend row")
+    row.scripts.OnEnter(row)
+    local text = table.concat(GameTooltip.lines, "\n")
+    truthy(text:find("no long cooldown", 1, true), text)
+    falsy(text:find("Unverified", 1, true), "still says unverified")
+    truthy(text:find("Source: heard + your buff", 1, true), text)
+    falsy(row.name.text:find("*", 1, true), "row still has the unverified star")
 end)
 
 test("helpers: names, durations, open world", function()

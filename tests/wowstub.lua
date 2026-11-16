@@ -201,7 +201,7 @@ function GameTooltip:AddDoubleLine(a, b) self.lines = self.lines or {}; self.lin
 -- game API
 ---------------------------------------------------------------------------
 
-C_AddOns = { GetAddOnMetadata = function(_, field) if field == "Version" then return "0.1.1" end end }
+C_AddOns = { GetAddOnMetadata = function(_, field) if field == "Version" then return "0.1.2" end end }
 function GetBuildInfo() return "1.60.1", "70338", "Nov 1 2026", 16001 end
 function GetNormalizedRealmName() return FAKE.realm end
 function UnitName(unit) if unit == "player" then return FAKE.name, nil end end

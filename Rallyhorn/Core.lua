@@ -30,7 +30,7 @@ local function readMetadata(field)
     return nil
 end
 
-ns.VERSION = readMetadata("Version") or "0.1.1"
+ns.VERSION = readMetadata("Version") or "0.1.2"
 
 ---------------------------------------------------------------------------
 -- Secret-value guards

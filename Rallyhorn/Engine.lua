@@ -109,6 +109,9 @@ function Engine:RecordDrop(key, ts, source, reporter, opts)
     local timers = self.store.timers
     local current = timers[key]
     local window = self:Window(buff)
+    -- Remember that the NPC was heard even after our own buff (a better
+    -- timestamp) takes over, so the window can say "heard + your buff".
+    local heard = (source == "yell" or source == "announce") or nil
 
     if current then
         local diff = ts - current.ts
@@ -121,11 +124,18 @@ function Engine:RecordDrop(key, ts, source, reporter, opts)
                 if duration then
                     current.dur = duration
                 end
+                if heard then
+                    current.heard = true
+                end
                 changed(key, current, "refined", opts)
                 return true, "refined", current
             end
             if duration and not current.dur then
                 current.dur = duration
+            end
+            if heard and not current.heard then
+                current.heard = true
+                changed(key, current, "heard", opts)
             end
             return false, "duplicate", current
         end
@@ -151,7 +161,7 @@ function Engine:RecordDrop(key, ts, source, reporter, opts)
         end
     end
 
-    local record = { ts = ts, source = source, reporter = reporter, seen = now, dur = duration }
+    local record = { ts = ts, source = source, reporter = reporter, seen = now, dur = duration, heard = heard }
     timers[key] = record
     changed(key, record, "new", opts)
     return true, "new", record
