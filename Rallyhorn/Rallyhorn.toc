@@ -2,7 +2,7 @@
 ## Title: Rallyhorn
 ## Notes: World buff drop timers for WoW Forever, shared with your guild and group.
 ## Author: Zudryx
-## Version: 0.1.2
+## Version: 0.1.3
 ## X-License: GPL-3.0-or-later
 ## SavedVariables: RallyhornDB
 ## IconTexture: Interface\AddOns\Rallyhorn\Media\Icon

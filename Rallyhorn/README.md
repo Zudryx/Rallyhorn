@@ -5,10 +5,10 @@ drops (for example an Onyxia or Rend head turn-in), shows how long the buff
 lasts and when it can drop again, and shares those timers with your guild and
 group.
 
-Version 0.1.2 is a pre-release, built before Forever's raids open on
+Version 0.1.3 is a pre-release, built before Forever's raids open on
 **December 9, 2026**. The timer engine, sharing, window and test tools work
 now. The Horde Rend turn-in (Warchief's Blessing) was confirmed in game on
-November 16, 2026. The Onyxia yell text and spell IDs can't be checked until
+November 16-17, 2026, in Orgrimmar and in the Barrens. The Onyxia yell text and spell IDs can't be checked until
 someone kills Onyxia, so they are still placeholders (see "Day-one checklist").
 
 Rallyhorn only shows information. It never casts, targets, moves, or clicks
@@ -348,6 +348,13 @@ sync prefix, so renamed and old copies won't share timers.
 
 ## Changes
 
+- **0.1.3:**
+  - Rend is now heard in the Barrens too: Rallyhorn knows the Herald of
+    Thrall's two yells, so you get the heads-up there as well as in
+    Orgrimmar.
+  - Rend's details are all confirmed from a capture log: spell ID 16609, and
+    the buff lands with the second yell, 3 to 6 seconds after the first.
+  - The Rend tooltip now says drops were seen 1 to 16 minutes apart.
 - **0.1.2:**
   - Horde Rend (Warchief's Blessing) is confirmed in Forever: Thrall's two
     yells in Orgrimmar and the 1-hour buff. Its row no longer has the

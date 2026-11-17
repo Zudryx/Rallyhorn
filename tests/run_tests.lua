@@ -287,6 +287,32 @@ test("Thrall's real Forever yells match Rend", function()
     eq(keys(M.Match("Thrall", "Be bathed in my power! Drink in my might! Battle for the glory of the Horde!", "Orgrimmar", "YELL")), "rend:drop")
 end)
 
+test("the Herald of Thrall's real Forever yells match Rend", function()
+    -- Captured in the Barrens on Nov 16, 2026.
+    local ns = boot()
+    local M = ns.Matcher
+    eq(keys(M.Match("Herald of Thrall", "Honor your heroes! On this day, they have dealt a great blow against one of our most hated enemies! The false Warchief, Rend Blackhand, has fallen!", "The Barrens", "YELL")), "rend:announce")
+    eq(keys(M.Match("Herald of Thrall", "Be bathed in the power of the Warchief! Drink in his might! Battle for the glory of the Horde!", "The Barrens", "YELL")), "rend:drop")
+    -- each NPC only matches its own lines
+    eq(keys(M.Match("Thrall", "Be bathed in the power of the Warchief! Drink in his might! Battle for the glory of the Horde!", "Orgrimmar", "YELL")), "")
+end)
+
+test("the herald's yells give a 4-second heads-up, then the drop", function()
+    local ns = boot()
+    local now = ns.Now()
+    fireEvent("CHAT_MSG_MONSTER_YELL", "Honor your heroes! On this day, they have dealt a great blow against one of our most hated enemies! The false Warchief, Rend Blackhand, has fallen!", "Herald of Thrall")
+    local rec = ns.Engine:GetRecord("rend")
+    truthy(rec, "no record from the first yell")
+    eq(rec.source, "announce")
+    eq(rec.ts, now + 4)
+    advance(3)
+    fireEvent("CHAT_MSG_MONSTER_YELL", "Be bathed in the power of the Warchief! Drink in his might! Battle for the glory of the Horde!", "Herald of Thrall")
+    rec = ns.Engine:GetRecord("rend")
+    eq(rec.source, "yell")
+    eq(rec.ts, now + 3, "the second yell sets the real time")
+    eq(rec.heard, true)
+end)
+
 test("wrong NPC, wrong chat type or missing words do not match", function()
     local ns = boot()
     local M = ns.Matcher

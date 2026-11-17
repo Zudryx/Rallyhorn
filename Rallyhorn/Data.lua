@@ -78,21 +78,30 @@ ns.BUFFS = {
         kind = "drop",
         duration = 3600,
         cooldown = nil,
-        cooldownText = "no long cooldown (drops seen minutes apart)",
-        -- Heads can be turned in minutes apart, so keep separate drops apart.
+        cooldownText = "no long cooldown (drops seen 1 to 16 minutes apart)",
+        -- Heads can be turned in minutes apart (83 seconds was the shortest
+        -- gap seen on Nov 17, 2026), so keep separate drops apart.
         dedupeWindow = 30,
-        -- 16609: Thrall's buff. 355366: the same buff cast by the Heralds of
-        -- Thrall in the Crossroads and Razor Hill.
+        -- 16609: confirmed in Forever, in Orgrimmar and in the Barrens.
+        -- 355366: listed by a guide for the Heralds of Thrall; not seen in
+        -- game yet (the heralds' buff also showed up as 16609).
         spellIds = { 16609, 355366 },
         auraNames = { "Warchief's Blessing" },
         triggers = {
-            -- Confirmed in Forever (Nov 16, 2026): "...The false Warchief, Rend Blackhand, has fallen!"
+            -- Thrall in Orgrimmar. Captured Nov 16-17, 2026: the second yell
+            -- (when the buff lands) came 5 and 6 seconds after the first.
+            -- "...The false Warchief, Rend Blackhand, has fallen!"
             { npc = { "Thrall" }, all = { "rend blackhand" }, delay = 6, stage = "announce" },
-            -- Confirmed in Forever (Nov 16, 2026): "Be bathed in my power! Drink in my might! ..."
+            -- "Be bathed in my power! Drink in my might! ..."
             { npc = { "Thrall" }, all = { "my might" }, delay = 0 },
+            -- The Herald of Thrall (heard in the Barrens). Same first line;
+            -- second line 3 to 4 seconds later.
+            { npc = { "Herald of Thrall" }, all = { "rend blackhand" }, delay = 4, stage = "announce" },
+            -- "Be bathed in the power of the Warchief! Drink in his might! ..."
+            { npc = { "Herald of Thrall" }, all = { "his might" }, delay = 0 },
         },
         verified = true,
-        note = "Confirmed in WoW Forever on Nov 16, 2026: Thrall's two yells in Orgrimmar and the 1-hour buff. Drops were seen minutes apart. The buff also reaches the Crossroads and Razor Hill. The 6-second wait after the first yell is still an estimate.",
+        note = "Confirmed in WoW Forever: Thrall's two yells in Orgrimmar, the Herald of Thrall's two yells in the Barrens, spell ID 16609 and the 1-hour buff. The buff lands with the second yell, 3 to 6 seconds after the first.",
     },
     {
         key = "rend_alliance",
