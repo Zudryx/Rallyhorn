@@ -829,6 +829,16 @@ test("Alliance: Might of Stormwind is matched by name when the spell ID is new",
     truthy(ns.Engine:GetRecord("rend_alliance"), "no record")
 end)
 
+test("Alliance: Might of Stormwind's in-game spell ID works on any client language", function()
+    -- 460939 was captured in Stormwind on Nov 17, 2026. A different name
+    -- stands in for a non-English client, so only the ID can match.
+    local ns = boot({ fake = { faction = "Alliance" } })
+    FAKE.auras = { { spellId = 460939, name = "Macht von Sturmwind", duration = 3600, expirationTime = FAKE.game + 3599 } }
+    fireEvent("UNIT_AURA", "player", {})
+    advance(1)
+    truthy(ns.Engine:GetRecord("rend_alliance"), "no record")
+end)
+
 test("Alliance window lists the Alliance buffs", function()
     local ns = boot({ fake = { faction = "Alliance" } })
     local out = {}

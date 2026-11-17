@@ -112,8 +112,9 @@ ns.BUFFS = {
         duration = 3600,
         cooldown = nil,
         dedupeWindow = 30,
-        -- Reported for Forever: 1304678 and 460940.
-        spellIds = { 1304678, 460940 },
+        -- 460939: seen in game in Stormwind on Nov 17, 2026 (capture mode).
+        -- 1304678 and 460940: listed by a guide, not seen in game yet.
+        spellIds = { 460939, 1304678, 460940 },
         auraNames = { "Might of Stormwind" },
         -- The Stormwind yell has not been recorded yet, so this one is picked
         -- up from your own buff only. Capture mode logs the yell for a patch.

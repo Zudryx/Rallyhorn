@@ -355,6 +355,8 @@ sync prefix, so renamed and old copies won't share timers.
   - Rend's details are all confirmed from a capture log: spell ID 16609, and
     the buff lands with the second yell, 3 to 6 seconds after the first.
   - The Rend tooltip now says drops were seen 1 to 16 minutes apart.
+  - Alliance: Might of Stormwind's spell ID as seen in game (460939) is
+    recognized, so it works on clients in any language.
 - **0.1.2:**
   - Horde Rend (Warchief's Blessing) is confirmed in Forever: Thrall's two
     yells in Orgrimmar and the 1-hour buff. Its row no longer has the
