@@ -111,16 +111,24 @@ ns.BUFFS = {
         kind = "drop",
         duration = 3600,
         cooldown = nil,
+        cooldownText = "no long cooldown (drops seen 1 to 10 minutes apart)",
+        -- Drops 48 seconds apart were seen on Nov 17, 2026.
         dedupeWindow = 30,
-        -- 460939: seen in game in Stormwind on Nov 17, 2026 (capture mode).
+        -- 460939: confirmed in game in Stormwind on Nov 17, 2026.
         -- 1304678 and 460940: listed by a guide, not seen in game yet.
         spellIds = { 460939, 1304678, 460940 },
         auraNames = { "Might of Stormwind" },
-        -- The Stormwind yell has not been recorded yet, so this one is picked
-        -- up from your own buff only. Capture mode logs the yell for a patch.
-        triggers = {},
-        verified = false,
-        note = "Forever's Alliance twin of Warchief's Blessing: Rend's head goes to Master Mathias Shaw in Stormwind (End of the Dark Horde). The buff reaches Stormwind, Goldshire, Lakeshire and Sentinel Hill. Picked up from your own buff until the yell is recorded.",
+        triggers = {
+            -- Major Mattingly in Stormwind's Trade District. Captured Nov 17,
+            -- 2026: the second yell (when the buff lands) came 6 seconds
+            -- after the first, both times.
+            -- "...great heroes of the Alliance have slain Rend Blackhand, cruel warchief of Blackrock's Dark Horde!"
+            { npc = { "Major Mattingly" }, all = { "rend blackhand" }, delay = 6, stage = "announce" },
+            -- "Bask in the glory of your King, and carry his blessing forth to all who threaten the shining city of Stormwind!"
+            { npc = { "Major Mattingly" }, all = { "bask in the glory" }, delay = 0 },
+        },
+        verified = true,
+        note = "Confirmed in WoW Forever on Nov 17, 2026: Major Mattingly's two yells in Stormwind, spell ID 460939 and the 1-hour buff. The buff lands with the second yell, 6 seconds after the first. Many drops come without a yell you can hear; Rallyhorn still picks those up from your buff.",
     },
     {
         key = "zandalar",

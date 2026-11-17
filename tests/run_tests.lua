@@ -66,7 +66,7 @@ end)
 test("unverified values are flagged", function()
     local ns = boot()
     -- Only buffs seen in WoW Forever may be marked verified.
-    local confirmed = { rend = true }
+    local confirmed = { rend = true, rend_alliance = true }
     for _, b in ipairs(ns.BUFFS) do
         eq(b.verified, confirmed[b.key] == true, b.key .. ".verified")
     end
@@ -311,6 +311,16 @@ test("the herald's yells give a 4-second heads-up, then the drop", function()
     eq(rec.source, "yell")
     eq(rec.ts, now + 3, "the second yell sets the real time")
     eq(rec.heard, true)
+end)
+
+test("Major Mattingly's real Forever yells match Alliance Rend", function()
+    -- Captured in Stormwind's Trade District on Nov 17, 2026.
+    local ns = boot()
+    local M = ns.Matcher
+    eq(keys(M.Match("Major Mattingly", "Hear me, citizens of Stormwind! Remember this day, for great heroes of the Alliance have slain Rend Blackhand, cruel warchief of Blackrock's Dark Horde!", "Stormwind City", "YELL")), "rend_alliance:announce")
+    eq(keys(M.Match("Major Mattingly", "Bask in the glory of your King, and carry his blessing forth to all who threaten the shining city of Stormwind!", "Stormwind City", "YELL")), "rend_alliance:drop")
+    -- the Onyxia event's yells in the same district don't count as Rend
+    eq(keys(M.Match("Lady Katrana Prestor", "Seize him! Seize the worthless criminal and his allies!", "Stormwind City", "YELL")), "")
 end)
 
 test("wrong NPC, wrong chat type or missing words do not match", function()
@@ -837,6 +847,22 @@ test("Alliance: Might of Stormwind's in-game spell ID works on any client langua
     fireEvent("UNIT_AURA", "player", {})
     advance(1)
     truthy(ns.Engine:GetRecord("rend_alliance"), "no record")
+end)
+
+test("Alliance: Mattingly's yells give a 6-second heads-up, then the drop", function()
+    local ns = boot({ fake = { faction = "Alliance" } })
+    local now = ns.Now()
+    fireEvent("CHAT_MSG_MONSTER_YELL", "Hear me, citizens of Stormwind! Remember this day, for great heroes of the Alliance have slain Rend Blackhand, cruel warchief of Blackrock's Dark Horde!", "Major Mattingly")
+    local rec = ns.Engine:GetRecord("rend_alliance")
+    truthy(rec, "no record from the first yell")
+    eq(rec.source, "announce")
+    eq(rec.ts, now + 6)
+    advance(6)
+    fireEvent("CHAT_MSG_MONSTER_YELL", "Bask in the glory of your King, and carry his blessing forth to all who threaten the shining city of Stormwind!", "Major Mattingly")
+    rec = ns.Engine:GetRecord("rend_alliance")
+    eq(rec.source, "yell")
+    eq(rec.ts, now + 6)
+    eq(rec.heard, true)
 end)
 
 test("Alliance window lists the Alliance buffs", function()

@@ -7,9 +7,11 @@ group.
 
 Version 0.1.3 is a pre-release, built before Forever's raids open on
 **December 9, 2026**. The timer engine, sharing, window and test tools work
-now. The Horde Rend turn-in (Warchief's Blessing) was confirmed in game on
-November 16-17, 2026, in Orgrimmar and in the Barrens. The Onyxia yell text and spell IDs can't be checked until
-someone kills Onyxia, so they are still placeholders (see "Day-one checklist").
+now. The Rend turn-ins were confirmed in game on November 16-17, 2026, for
+both factions: Warchief's Blessing (Orgrimmar and the Barrens) and Might of
+Stormwind (Stormwind). The Onyxia yell text and spell IDs can't be checked
+until someone kills Onyxia, so they are still placeholders (see "Day-one
+checklist").
 
 Rallyhorn only shows information. It never casts, targets, moves, or clicks
 anything for you.
@@ -290,20 +292,20 @@ Run `/console scriptErrors 1` first so any Lua error shows up on screen.
      `MAINTAINING.md` in the repo).
    - Don't rename buff keys. Keys are what's shared between players, so
      keeping them lets old and new versions still share timers.
-7. **Do the same for the Alliance Rend buff** (Might of Stormwind, key
-   `rend_alliance`): an Alliance player with capture on in Stormwind records
-   the yell, and it goes into `triggers`. Horde Rend is already confirmed.
-   Do the same for any other world buff confirmed in Forever.
+7. **Do the same for any other world buff** confirmed in Forever. Both Rend
+   buffs are already confirmed.
 
 ---
 
 ## Known limits
 
-- Except Horde Rend, buff values are Classic Era placeholders until confirmed.
+- Except the two Rend buffs, buff values are Classic Era placeholders until
+  confirmed.
 - Rend has no long cooldown in Forever (drops were seen minutes apart), so its
   row shows "Gone" rather than "Ready in" once the buff ends.
-- Might of Stormwind (Alliance Rend) is picked up from your own buff only,
-  until its yell is recorded.
+- Many Rend drops come without a yell you can hear. Rallyhorn still picks them
+  up from your own buff, but you only get the heads-up when the yell reaches
+  you.
 - NPC names and keywords are English, so the addon only detects drops on
   English (enUS) clients for now.
 - Forever reportedly applies world buffs in the open world only (not dungeons,
@@ -355,8 +357,12 @@ sync prefix, so renamed and old copies won't share timers.
   - Rend's details are all confirmed from a capture log: spell ID 16609, and
     the buff lands with the second yell, 3 to 6 seconds after the first.
   - The Rend tooltip now says drops were seen 1 to 16 minutes apart.
-  - Alliance: Might of Stormwind's spell ID as seen in game (460939) is
-    recognized, so it works on clients in any language.
+  - Alliance Rend (Might of Stormwind) is confirmed in Forever: Major
+    Mattingly's two yells in Stormwind, spell ID 460939 and the 1-hour buff.
+    Alliance players now get the heads-up too, and the row no longer has the
+    unverified `*`.
+  - The Alliance buff is also recognized by its spell ID, so it works on
+    clients in any language.
 - **0.1.2:**
   - Horde Rend (Warchief's Blessing) is confirmed in Forever: Thrall's two
     yells in Orgrimmar and the 1-hour buff. Its row no longer has the
