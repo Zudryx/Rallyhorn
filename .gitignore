@@ -7,3 +7,7 @@ __pycache__/
 WTF/
 SavedVariables/
 *.lua.bak
+cf-notes.md
+updater/LICENSE.txt
+updater/backup/
+updater/*.json

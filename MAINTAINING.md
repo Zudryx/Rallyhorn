@@ -18,17 +18,38 @@
 - **Never commit saved data** from the game (`WTF`, `SavedVariables`). It can
   hold other players' names.
 
-## The owner tests before anything reaches players
+## How changes reach players
 
-1. Work goes on the **`testing`** branch. Each push there runs the tests and
-   publishes a GitHub **pre-release** test build (`vX.Y.Z-test.N`). Test
-   builds are never sent to CurseForge, and only the newest one is kept.
-2. A test build needs a version that isn't released yet, so bump the version
-   first (see below). A push for a version that's already released (for
-   example a docs-only change) makes no test build.
-3. When the owner has tried the test build in game and approves, merge
-   `testing` into **`main`**. That publishes the normal GitHub release
-   `vX.Y.Z` (and uploads it to CurseForge once that's set up).
+1. **Every finished change is released on GitHub.** Make a new version (see
+   below) and push it to **`main`**. That publishes GitHub release `vX.Y.Z`
+   with the addon zip and `RallyhornUpdater.zip`, and the owner updates with
+   "Update Rallyhorn.bat" to test it in game. A push that doesn't change the
+   version (for example a docs-only change) releases nothing.
+2. **CurseForge waits for the owner.** Nothing is sent there automatically.
+   Only when the owner says the changes are complete, run Actions > Release >
+   Run workflow on `main` with **CurseForge: upload** (or
+   `gh workflow run release.yml --ref main -f curseforge=upload`). It sends
+   the current release's zip, with a changelog covering every version since
+   the last upload. The `curseforge` tag marks what was sent last; the
+   workflow moves it, so don't move or delete it by hand.
+3. **Test builds are optional**, for trying something risky before it's a
+   release. Pushing to **`testing`** publishes a GitHub **pre-release**
+   (`vX.Y.Z-test.N`), installed by "Update Rallyhorn (testing).bat". It needs
+   a version that isn't released yet, only the newest test build is kept, and
+   test builds never go to CurseForge. Once that version is released on
+   `main`, its test builds are removed. Fast-forward `testing` to `main` after
+   each release so it never falls behind.
+
+## The updater
+
+`updater/` holds the Windows updater: `Update-Rallyhorn.ps1` and the two
+`.bat` files that run it. Every release (test builds too) carries it as
+`RallyhornUpdater.zip`. It finds the `_forever_\Interface\AddOns` folder,
+installs the newest release if it's newer than the installed `## Version:`,
+keeps the old copy in a `backup` folder next to itself and prints the release
+notes. It picks the addon zip by the name `Rallyhorn-*.zip`, so keep that
+name. Keep the `.ps1` plain ASCII: Windows PowerShell 5.1 misreads other
+characters in a file without a byte order mark.
 
 ## Making a new version
 
@@ -37,7 +58,7 @@
   The release workflow stops if they don't match.
 - Add a `- **x.y.z:**` entry at the top of `## Changes` in
   `Rallyhorn/README.md`, written for players. That entry becomes the release
-  notes.
+  notes (`.github/scripts/changelog.py` reads it).
 - Run the tests (they must all pass):
 
   ```
@@ -79,13 +100,15 @@ make a new version as above.
 
 Not set up yet. Once the CurseForge project exists:
 
-1. Add `## X-Curse-Project-ID: <project id>` to `Rallyhorn/Rallyhorn.toc`.
+1. Add `## X-Curse-Project-ID: <project id>` to `Rallyhorn/Rallyhorn.toc`
+   and release that as a new version.
 2. Add a CurseForge API token as the repository secret `CF_API_KEY`
    (Settings > Secrets and variables > Actions).
 3. Check it without uploading: Actions > Release > Run workflow, branch
-   `main`, **CurseForge: check**.
+   `main`, **CurseForge: check**. It also shows the changelog it would send.
 
-From then on, every new release on `main` is also uploaded to CurseForge by
-`.github/scripts/curseforge_upload.py`, tagged with the WoW Forever game
+Uploads only happen when the owner asks (see "How changes reach players").
+`.github/scripts/curseforge_upload.py` tags them with the WoW Forever game
 version that matches `## Interface` (16001 = 1.60.1). If an upload fails, fix
-the cause and run the workflow by hand with **upload**.
+the cause and run **upload** again; the `curseforge` tag only moves after a
+successful upload.

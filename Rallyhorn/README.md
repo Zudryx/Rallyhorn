@@ -5,7 +5,7 @@ drops (for example an Onyxia or Rend head turn-in), shows how long the buff
 lasts and when it can drop again, and shares those timers with your guild and
 group.
 
-Version 0.1.3 is a pre-release, built before Forever's raids open on
+Version 0.1.3 is an early version, built before Forever's raids open on
 **December 9, 2026**. The timer engine, sharing, window and test tools work
 now. The Rend turn-ins were confirmed in game on November 16-17, 2026, for
 both factions: Warchief's Blessing (Orgrimmar and the Barrens) and Might of
@@ -20,6 +20,16 @@ anything for you.
 
 ## Install
 
+**With the updater (Windows).** Download `RallyhornUpdater.zip` from the
+newest release on <https://github.com/Zudryx/Rallyhorn/releases>, unzip it
+somewhere outside your AddOns folder and double-click **Update Rallyhorn.bat**.
+It finds Forever's AddOns folder (or asks you once), installs the newest
+version, keeps your old copy in a `backup` folder next to it and shows what
+changed. Run it again to update. **Update Rallyhorn (testing).bat** also
+installs test builds (releases marked *Pre-release*). Then go to step 3.
+
+**By hand:**
+
 1. Download `Rallyhorn-x.y.z.zip` from the newest release on
    <https://github.com/Zudryx/Rallyhorn/releases> (skip the ones marked
    *Pre-release*: those are test builds). Unzip it. You get a folder called
@@ -29,6 +39,7 @@ anything for you.
    (The beta used `_classic_beta_` instead of `_forever_`.) When you're done
    you should have `...\Interface\AddOns\Rallyhorn\Rallyhorn.toc`.
 3. Restart the game completely. A new addon usually isn't picked up by `/reload`.
+   (Updates are: after updating, `/reload` is enough.)
 4. On the character screen, open **AddOns** and make sure Rallyhorn is ticked.
 
 If the AddOns list says **out of date**, Blizzard has changed the interface
@@ -287,9 +298,9 @@ Run `/console scriptErrors 1` first so any Lua error shows up on screen.
 5. **Check it.** `/rhorn testyell ony_horde` should match. If you have Lua
    installed, run the tests too (see Development).
 6. **Ship a patch.**
-   - Bump the version and push to the `testing` branch on GitHub. That makes
-     a test build to try in game; merging into `main` releases it (see
-     `MAINTAINING.md` in the repo).
+   - Bump the version and push it to `main` on GitHub. That publishes a
+     release the updater picks up. CurseForge only gets it when it's sent
+     there by hand (see `MAINTAINING.md` in the repo).
    - Don't rename buff keys. Keys are what's shared between players, so
      keeping them lets old and new versions still share timers.
 7. **Do the same for any other world buff** confirmed in Forever. Both Rend
@@ -363,6 +374,8 @@ sync prefix, so renamed and old copies won't share timers.
     unverified `*`.
   - The Alliance buff is also recognized by its spell ID, so it works on
     clients in any language.
+  - New Windows updater: `RallyhornUpdater.zip` on the releases page
+    installs Rallyhorn and updates it with a double-click (see Install).
 - **0.1.2:**
   - Horde Rend (Warchief's Blessing) is confirmed in Forever: Thrall's two
     yells in Orgrimmar and the 1-hour buff. Its row no longer has the

@@ -11,18 +11,32 @@ anything for you.
 
 ## Download and install
 
-1. Open the [Releases page](https://github.com/Zudryx/Rallyhorn/releases) and download `Rallyhorn-x.y.z.zip`
-   from the newest release that isn't marked *Pre-release*.
-2. Unzip it and copy the `Rallyhorn` folder into
-   `World of Warcraft\_forever_\Interface\AddOns\`.
-3. Restart the game completely, then check that Rallyhorn is ticked in the
-   **AddOns** list on the character screen.
+**Easiest (Windows): the updater.** It installs Rallyhorn and keeps it up to
+date, so you never copy folders by hand.
 
-Type `/rhorn` in game to show or hide the window.
+1. Open the [Releases page](https://github.com/Zudryx/Rallyhorn/releases) and
+   download `RallyhornUpdater.zip` from the newest release.
+2. Unzip it somewhere that isn't your AddOns folder (your Documents, for
+   example) and double-click **Update Rallyhorn.bat**. It finds
+   `World of Warcraft\_forever_\Interface\AddOns` (or asks you once), installs
+   the newest version and shows what changed. If Windows warns about an
+   unknown app, choose *More info* > *Run anyway*.
+3. Run it again whenever you want to check for a new version. Your old copy
+   is kept in a `backup` folder next to the updater, and your timers and
+   settings are never touched.
+
+**By hand.** Download `Rallyhorn-x.y.z.zip` from the newest release that isn't
+marked *Pre-release*, unzip it and copy the `Rallyhorn` folder into
+`World of Warcraft\_forever_\Interface\AddOns\`.
+
+Then restart the game completely (a new addon isn't picked up by `/reload`)
+and check that Rallyhorn is ticked in the **AddOns** list on the character
+screen. Type `/rhorn` in game to show or hide the window.
 
 **Test builds.** Releases marked *Pre-release* (named "test 1", "test 2" and
-so on) are new versions waiting to be tested. They can have bugs. They are
-never sent to CurseForge.
+so on) are for trying changes early and can have bugs. **Update Rallyhorn
+(testing).bat** installs them; **Update Rallyhorn.bat** takes you back to the
+normal releases. Test builds are never sent to CurseForge.
 
 ## Full guide
 
